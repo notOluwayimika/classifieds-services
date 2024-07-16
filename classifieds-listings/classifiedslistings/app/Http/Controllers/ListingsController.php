@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Listings;
 use App\Http\Requests\StoreListingsRequest;
 use App\Http\Requests\UpdateListingsRequest;
+use Exception;
 
 class ListingsController extends Controller
 {
@@ -15,6 +16,16 @@ class ListingsController extends Controller
     {
         $query = Listings::query();
         return response()->json($query->get());
+    }
+
+    public function show($id)
+    {
+        try{
+           return Listings::findOrFail($id); 
+        }catch(Exception $e){
+            return $e->getMessage();
+        }
+        
     }
 
     /**
@@ -36,10 +47,7 @@ class ListingsController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Listings $listings)
-    {
-        //
-    }
+    
 
     /**
      * Show the form for editing the specified resource.

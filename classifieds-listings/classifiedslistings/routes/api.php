@@ -23,3 +23,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::get('/listings', [ListingsController::class, 'index']);
 
 Route::get('/shops', [ShopController::class, 'index']);
+
+Route::get('/listings/{id}', [ListingsController::class, 'show']);
