@@ -9,13 +9,30 @@ use Illuminate\Http\Request;
 class OrderController extends Controller
 {
     //
-    public function index(Request $request){
+    public function index(Request $request)
+    {
         $query = Orders::query();
         return response()->json($query->get());
     }
-
-    public function store(Request $request){
+    public function cancel($id){
         try{
+            $order = Orders::findOrFail($id);
+            $order->status = "canceled";
+            $order->save();
+        }catch(Exception $e){
+            return $e->getMessage();
+        }
+    }
+    public function destroy($id){
+        try{
+            Orders::findOrFail($id)->delete();
+        }catch(Exception $e){
+            return $e->getMessage();
+        }
+    }
+    public function store(Request $request)
+    {
+        try {
             $order = new Orders;
             $body = $request->json()->all();
             // dd($body['listings']);
@@ -27,9 +44,17 @@ class OrderController extends Controller
             $order->status = 'active';
             $order->save();
             return 'order created';
-        }catch(Exception $e){
+        } catch (Exception $e) {
             return $e->getMessage();
         }
-        
+    }
+
+    public function show($id)
+    {
+        try {
+            return Orders::findOrFail($id);
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
     }
 }
