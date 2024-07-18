@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Shop;
 use App\Http\Requests\StoreShopRequest;
 use App\Http\Requests\UpdateShopRequest;
+use Exception;
+use Illuminate\Http\Request;
 
 class ShopController extends Controller
 {
@@ -20,9 +22,18 @@ class ShopController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
-        //
+        try{
+            $shop = new Shop;
+            $body = $request->json()->all();
+            $shop->name =$body['shop'];
+            // $shop->name= $request->input('name');
+            $shop->save();
+            return 'shop created';
+        }catch(Exception $e){
+            return $e->getMessage();
+        }
     }
 
     /**

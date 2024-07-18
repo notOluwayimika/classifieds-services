@@ -25,3 +25,13 @@ Route::get('/listings', [ListingsController::class, 'index']);
 Route::get('/shops', [ShopController::class, 'index']);
 
 Route::get('/listings/{id}', [ListingsController::class, 'show']);
+
+Route::get('/listings/shop/{id}', [ListingsController::class, 'shop']);
+
+Route::post('/shops', [ShopController::class, 'create']);
+
+Route::post('/listings', [ListingsController::class, 'create']);
+
+Route::put('/listings/{id}', [ListingsController::class, 'store']);
+
+Route::delete('/listings/{id}', [ListingsController::class, 'destroy']);
