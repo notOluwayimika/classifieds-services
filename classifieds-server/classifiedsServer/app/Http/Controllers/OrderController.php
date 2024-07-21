@@ -3,30 +3,44 @@
 namespace App\Http\Controllers;
 
 use App\Models\Orders;
+use App\Services\MessageService;
 use Exception;
+use Illuminate\Database\Eloquent\Casts\Json;
 use Illuminate\Http\Request;
+use PhpAmqpLib\Connection\AMQPStreamConnection;
+use PhpAmqpLib\Message\AMQPMessage;
 
 class OrderController extends Controller
 {
     //
+    protected $messageService;
+
+    public function __construct(MessageService $messageService) {
+        $this->messageService = $messageService;
+    }
     public function index(Request $request)
     {
         $query = Orders::query();
+        
+        
+
         return response()->json($query->get());
     }
-    public function cancel($id){
-        try{
+    public function cancel($id)
+    {
+        try {
             $order = Orders::findOrFail($id);
             $order->status = "canceled";
             $order->save();
-        }catch(Exception $e){
+        } catch (Exception $e) {
             return $e->getMessage();
         }
     }
-    public function destroy($id){
-        try{
+    public function destroy($id)
+    {
+        try {
             Orders::findOrFail($id)->delete();
-        }catch(Exception $e){
+        } catch (Exception $e) {
             return $e->getMessage();
         }
     }
@@ -43,6 +57,21 @@ class OrderController extends Controller
             $order->user_id = $body['user'];
             $order->status = 'active';
             $order->save();
+            $listings = [];
+
+            foreach (json_decode($order->listings, true) as $listing) {
+                $details = [
+                    "id"=>$listing["id"],
+                    "quantity"=>$listing["quantity"]
+                ];
+                array_push($listings,$details);
+            }
+            $orderdetails =[
+                "id"=>$order->id,
+                "listings"=>$listings,
+                "action"=>"list"
+            ];
+            $this->messageService->sendMessage('delivery', json_encode($orderdetails));
             return 'order created';
         } catch (Exception $e) {
             return $e->getMessage();
@@ -52,7 +81,9 @@ class OrderController extends Controller
     public function show($id)
     {
         try {
-            return Orders::findOrFail($id);
+            $order =Orders::findOrFail($id);
+            
+            return  $order;
         } catch (Exception $e) {
             return $e->getMessage();
         }
