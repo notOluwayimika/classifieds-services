@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Listings;
+use App\Models\Shop;
+use Exception;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 
@@ -57,9 +59,21 @@ class MessageService
         $response = json_decode($message);
         // echo json_encode($response->listings);
         // $listing = Listings::findOrFail();
-        $listing = Listings::findOrFail($response->id);
-        $listing->stock = $listing->stock - $response->quantity;
-        $listing->save();
+        if (!is_null($response)) {
+            $listing = Listings::findOrFail($response->id);
+            $listing->stock = $listing->stock - $response->quantity;
+            $listing->save();
+        } else {
+            try {
+                $shop = new Shop;
+                $shop->name = $message;
+                // $shop->name= $request->input('name');
+                $shop->save();
+                echo 'shop created';
+            } catch (Exception $e) {
+                return $e->getMessage();
+            }
+        }
     }
 
     public function closeConnection()

@@ -69,7 +69,9 @@ class OrderController extends Controller
             $orderdetails =[
                 "id"=>$order->id,
                 "listings"=>$listings,
-                "action"=>"list"
+                "action"=>"list",
+                "address"=>$order->address,
+                "number"=>$order->number
             ];
             $this->messageService->sendMessage('delivery', json_encode($orderdetails));
             return 'order created';

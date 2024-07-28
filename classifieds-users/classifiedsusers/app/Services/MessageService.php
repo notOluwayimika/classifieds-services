@@ -1,4 +1,4 @@
-<?php 
+<?php
 // app/Services/MessageService.php
 namespace App\Services;
 
@@ -34,29 +34,17 @@ class MessageService
 
         $callback = function ($msg) {
             echo " [x] Received ", $msg->body, "\n";
-            sleep(5);
             // Process the received message
             $this->processMessage($msg->body);
             // Send a new message after processing
-            $body = json_decode($msg->body);
-            $statusresponse= [
-                "id"=>$body->id,
-                "status"=>"delivered"
-            ];
-            $this->sendMessage('orders', json_encode($statusresponse));
-            foreach ($body->listings as $listing ) {
-                $stockresponse= [
-                    "id"=>$listing->id,
-                    "quantity"=>$listing->quantity
-                ];
-                sleep(5);
-                $this->sendMessage('listings', json_encode($stockresponse));
-            }
+            $newMessage = 'Processed ' . $msg->body;
+            $this->sendMessage('processed_queue', $newMessage);
         };
 
         $this->channel->basic_consume($queue, '', false, true, false, false, $callback);
 
-        while (count($this->channel->callbacks)) {
+        // Loop to keep the script running
+        while ($this->channel->is_consuming()) {
             $this->channel->wait();
         }
     }
@@ -64,10 +52,7 @@ class MessageService
     public function processMessage($message)
     {
         // Your message processing logic here
-        $body = json_decode($message);
-        echo " [x] Delivering Order with ID: ",$body->id, "to Address: ", $body->address, "\n";
-        echo "[x] Calling number: ", $body->number;
-        sleep(5);
+        echo " [x] Processing ", $message, "\n";
     }
 
     public function closeConnection()

@@ -8,10 +8,16 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use App\Services\MessageService;
 
 class AuthController extends Controller
 {
     //
+    protected $messageService;
+
+    public function __construct(MessageService $messageService) {
+        $this->messageService = $messageService;
+    }
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -44,13 +50,16 @@ class AuthController extends Controller
             // dd($request->input('shop'));
             if ($request->input('shop')) {
                 $user->role = "shop";
+                $this->messageService->sendMessage('listings', $request->input('shop'));
                 $user->shopId = $request->input('index')+5;
             } else {
                 $user->role = "user";
             }
+            
             $user->email_verified_at = now();
             $user->setRememberToken($token = Str::random(60));
             $user->save();
+            
             return  response()->json([
                 'message' => 'Registered',
                 'user' => $user
